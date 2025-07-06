@@ -30,9 +30,9 @@ notifications/notification-2025-07-06.json
     "message": "Solicitud de validación del paciente...",
     "userProfile": {
       "name": "Usuario",
-      "age": 31,
-      "weight": 50,
-      "height": 1.55
+      "age": 25,
+      "weight": 70,
+      "height": 1.70
     },
     "type": "validation",
     "id": "mcr79qkicr8h9fzicj7"
