@@ -18,6 +18,9 @@ Un asistente de nutrición inteligente con interfaz web moderna protagonizado po
 - **Logs inteligentes** en el servidor (interfaz limpia para el usuario)
 - **Conexión automática** con manejo silencioso de errores
 
+  <img width="1473" alt="Captura de pantalla 2025-07-06 a la(s) 3 28 25 a  m" src="https://github.com/user-attachments/assets/6d866f9e-c1b6-4c1b-9b9c-02ea8728e717" />
+
+
 ## 🎯 Herramientas Disponibles
 
 ### Herramientas de IA Nutricional
