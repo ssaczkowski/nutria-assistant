@@ -125,7 +125,7 @@ Cuando funciona correctamente verás:
 ```
 ✅ Notificación enviada exitosamente a nutricionista@example.com
 
-📧 Asunto: Validación profesional solicitada - Sabrina - nutrIA
+📧 Asunto: Validación profesional solicitada - Usuario - nutrIA
 📝 Se ha enviado tu solicitud de validación junto con el contexto de la conversación.
 
 🔔 Te notificaremos cuando tu nutricionista responda.
