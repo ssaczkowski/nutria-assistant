@@ -73,8 +73,8 @@ fi
 echo
 read -p "Ingresa tu API key de OpenAI: " -r api_key
 
-# Validar formato básico
-if [[ ! $api_key =~ ^sk-[a-zA-Z0-9]{48,}$ ]]; then
+# Validar formato básico (acepta tanto sk- como sk-proj-)
+if [[ ! $api_key =~ ^sk-[a-zA-Z0-9_-]{20,}$ ]]; then
     error "La API key no tiene el formato correcto (debe empezar con 'sk-')"
     exit 1
 fi

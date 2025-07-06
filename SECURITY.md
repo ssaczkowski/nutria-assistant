@@ -18,7 +18,7 @@ Este proyecto maneja información sensible y requiere configuración segura ante
 
 ```bash
 # Archivo .env (NO incluir en Git)
-OPENAI_API_KEY=sk-your-real-api-key-here
+OPENAI_API_KEY=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
 NODE_ENV=production
 NOTIFICATION_METHOD=local
 NOTIFICATION_TYPE=file

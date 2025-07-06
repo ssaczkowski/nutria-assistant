@@ -32,12 +32,6 @@ const SUGGESTED_QUESTIONS = [
     command: "enviar mensaje Necesito agendar una cita para revisión nutricional y consulta sobre mi plan alimentario actual"
   },
   {
-    question: "¿Podés validar esto con mi nutricionista?",
-    icon: "✅",
-    color: "from-amber-400 to-orange-500",
-    command: "podés validar esto con mi nutricionista para confirmar que es correcto"
-  },
-  {
     question: "¿Podrías enviarle mi plan a mi nutridoc?",
     icon: "📋",
     color: "from-indigo-400 to-purple-500",
@@ -63,13 +57,20 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
   const [showSuggestions, setShowSuggestions] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
+  // Estados para el modal de imagen
+  const [showImageModal, setShowImageModal] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  
   // Estados para el perfil del usuario
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [userProfile, setUserProfile] = useState({
     name: 'Usuario',
     age: 25,
     weight: 70,
-    height: 1.70
+    height: 1.70,
+    objetivo: ''
   });
   const [tempProfile, setTempProfile] = useState(userProfile);
 
@@ -105,7 +106,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
         const welcomeMessage: MCPMessage = {
           id: Date.now().toString(),
           type: 'tool',
-          content: `¡Hola, ${userProfile.name}! 🦦\n\nSoy nutrIA, tu asistente especializado en nutrición y salud. Estoy aquí para ayudarte con:\n\n• Planes de alimentación personalizados\n• Consejos nutricionales específicos\n• Análisis de dietas y hábitos\n• Recomendaciones para objetivos de salud\n\n¿En qué puedo ayudarte hoy? Puedes escribirme directamente o usar una de las preguntas sugeridas abajo.`,
+          content: `¡Hola, ${userProfile.name}! 🦦\n\nSoy nutrIA, tu asistente especializado en nutrición y salud. Estoy aquí para ayudarte con:\n\n• Planes de alimentación personalizados\n• Consejos nutricionales específicos\n• Análisis de dietas y hábitos\n• Recomendaciones para objetivos de salud\n\n¿En qué puedo ayudarte hoy? Puedes escribirme directamente o usar una de las preguntas sugeridas.`,
           timestamp: new Date(),
           toolName: 'chat'
         };
@@ -203,7 +204,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
     const welcomeMessage: MCPMessage = {
       id: Date.now().toString(),
       type: 'tool',
-      content: `¡Hola, ${userProfile.name}! 🦦\n\nSoy nutrIA, tu asistente especializado en nutrición y salud. Estoy aquí para ayudarte con:\n\n• Planes de alimentación personalizados\n• Consejos nutricionales específicos\n• Análisis de dietas y hábitos\n• Recomendaciones para objetivos de salud\n\n¿En qué puedo ayudarte hoy? Puedes escribirme directamente o usar una de las preguntas sugeridas abajo.`,
+      content: `¡Hola, ${userProfile.name}! 🦦\n\nSoy nutrIA, tu asistente especializado en nutrición y salud. Estoy aquí para ayudarte con:\n\n• Planes de alimentación personalizados\n• Consejos nutricionales específicos\n• Análisis de dietas y hábitos\n• Recomendaciones para objetivos de salud\n\n. El formato debe ser usando emoticones cuando sea posible ya que el usuario son personas fitness, wealthness de entre18 a 35 años que quieren cumplir su objetivo.`,
       timestamp: new Date(),
       toolName: 'chat'
     };
@@ -269,6 +270,90 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
       ...prev,
       [field]: value
     }));
+  };
+
+  // Funciones para manejar imágenes
+  const handleImageUpload = (file: File) => {
+    if (file.type.startsWith('image/')) {
+      setSelectedImage(file);
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    
+    const files = Array.from(e.dataTransfer.files);
+    const imageFile = files.find(file => file.type.startsWith('image/'));
+    
+    if (imageFile) {
+      handleImageUpload(imageFile);
+    }
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      handleImageUpload(file);
+    }
+  };
+
+  const sendImageMessage = async () => {
+    if (!selectedImage || !imagePreview) return;
+    
+    // Agregar mensaje de imagen del usuario
+    const imageMessage: MCPMessage = {
+      id: Date.now().toString(),
+      type: 'user',
+      content: `[Imagen enviada: ${selectedImage.name}]`,
+      timestamp: new Date(),
+      imageData: imagePreview
+    };
+    
+    setMessages(prev => [...prev, imageMessage]);
+    setShowImageModal(false);
+    setSelectedImage(null);
+    setImagePreview(null);
+    setIsLoading(true);
+    
+    try {
+      // Usar la herramienta de análisis nutricional de imágenes
+      const result = await mcpClient.callTool('image-nutrition-analysis', {
+        imageData: imagePreview,
+        imageName: selectedImage.name,
+        userProfile: userProfile
+      });
+      
+      addToolMessage('image-nutrition-analysis', result);
+    } catch (error) {
+      console.error('Error procesando imagen:', error);
+      logToServer(`Error al analizar imagen: ${error instanceof Error ? error.message : 'Error desconocido'}`, 'error');
+      addSystemMessage('❌ Error procesando la imagen. Por favor, inténtalo de nuevo.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const closeImageModal = () => {
+    setShowImageModal(false);
+    setSelectedImage(null);
+    setImagePreview(null);
+    setIsDragging(false);
   };
 
   // Función para manejar preguntas sugeridas
@@ -351,6 +436,9 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
   };
 
   const addUserMessage = (content: string) => {
+    // Detectar y actualizar objetivo antes de agregar el mensaje
+    detectAndUpdateObjective(content);
+    
     const message: MCPMessage = {
       id: Date.now().toString(),
       type: 'user',
@@ -723,7 +811,69 @@ Por favor revisa esta información y proporciona tu opinión profesional.`;
     }
   };
 
+  // Función para detectar y actualizar objetivos del usuario
+  const detectAndUpdateObjective = (message: string) => {
+    const objetivos = {
+      'perder peso': 'adelgazar',
+      'bajar de peso': 'adelgazar', 
+      'adelgazar': 'adelgazar',
+      'definir': 'definir',
+      'tonificar': 'definir',
+      'ganar masa muscular': 'masa',
+      'aumentar masa': 'masa',
+      'muscle': 'masa',
+      'masa muscular': 'masa',
+      'volumen': 'volumen',
+      'ganar peso': 'volumen',
+      'aumentar peso': 'volumen',
+      'mantener': 'mantener',
+      'mantenimiento': 'mantener',
+      'salud': 'salud',
+      'saludable': 'salud',
+      'triglicéridos': 'salud',
+      'colesterol': 'salud',
+      'diabetes': 'salud',
+      'vegana': 'vegana',
+      'vegetariano': 'vegetariano',
+      'rendimiento': 'rendimiento',
+      'deporte': 'rendimiento',
+      'atlético': 'rendimiento'
+    };
+
+    const lowerMessage = message.toLowerCase();
+    for (const [keyword, objetivo] of Object.entries(objetivos)) {
+      if (lowerMessage.includes(keyword)) {
+        if (userProfile.objetivo !== objetivo) {
+          setUserProfile(prev => ({
+            ...prev,
+            objetivo: objetivo
+          }));
+          logToServer(`Objetivo detectado y actualizado: ${objetivo}`, 'info');
+        }
+        break;
+      }
+    }
+  };
+
+  // Función para convertir objetivos en oraciones descriptivas
+  const getObjetivoDescriptivo = (objetivo: string): string => {
+    const descripcioneObjetivos: Record<string, string> = {
+      'adelgazar': 'Perder peso de forma saludable',
+      'masa': 'Ganar masa muscular',
+      'definir': 'Definir y tonificar el cuerpo',
+      'volumen': 'Aumentar peso y volumen',
+      'mantener': 'Mantener peso actual',
+      'salud': 'Mejorar la salud general',
+      'vegana': 'Alimentación vegana balanceada',
+      'vegetariano': 'Alimentación vegetariana equilibrada',
+      'rendimiento': 'Optimizar rendimiento deportivo'
+    };
+    
+    return descripcioneObjetivos[objetivo] || objetivo;
+  };
+
   return (
+    <>
     <div className={`flex h-screen bg-gradient-to-br from-slate-50 to-gray-100 ${className}`}>
       {/* Sidebar con herramientas */}
       <div className="w-80 bg-white/80 backdrop-blur-xl shadow-2xl border-r border-white/20 flex flex-col">
@@ -855,6 +1005,19 @@ Por favor revisa esta información y proporciona tu opinión profesional.`;
                     }
                   </span>
                 </div>
+                
+                {/* Mostrar objetivo si está definido */}
+                {userProfile.objetivo && (
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <span className="text-sm mr-2">🚀</span>
+                      <span className="text-sm font-medium text-gray-700">Objetivo</span>
+                    </div>
+                    <span className="text-sm text-blue-600 font-medium capitalize">
+                      {getObjetivoDescriptivo(userProfile.objetivo)}
+                    </span>
+                  </div>
+                )}
               </div>
               
               {isEditingProfile ? (
@@ -1132,6 +1295,14 @@ Por favor revisa esta información y proporciona tu opinión profesional.`;
               />
             </div>
             <button
+              onClick={() => setShowImageModal(true)}
+              className="p-3 text-gray-500 hover:text-emerald-600 transition-all duration-200 transform hover:scale-110 active:scale-95"
+              title="Upload Image"
+              disabled={!isConnected || isLoading}
+            >
+              <span className="text-xl">📷</span>
+            </button>
+            <button
               onClick={handleSendMessage}
               disabled={!inputValue.trim() || !isConnected || isLoading}
               className="py-4 px-8 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-2xl hover:from-emerald-600 hover:to-teal-600 transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:shadow-lg transform hover:scale-[1.02] active:scale-95"
@@ -1143,5 +1314,113 @@ Por favor revisa esta información y proporciona tu opinión profesional.`;
         </div>
       </div>
     </div>
+
+    {/* Modal para subir imágenes */}
+    {showImageModal && (
+      <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div className="bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="p-6 border-b border-gray-200">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xl font-bold text-gray-800">📷 Upload Image</h3>
+              <button
+                onClick={closeImageModal}
+                className="text-gray-500 hover:text-gray-700 transition-colors"
+              >
+                <span className="text-2xl">×</span>
+              </button>
+            </div>
+          </div>
+          
+          <div className="p-6">
+            {!imagePreview ? (
+              <div
+                className={`border-2 border-dashed rounded-2xl p-8 text-center transition-all duration-300 ${
+                  isDragging
+                    ? 'border-emerald-400 bg-emerald-50'
+                    : 'border-gray-300 hover:border-emerald-400 hover:bg-emerald-50'
+                }`}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+              >
+                <div className="text-6xl mb-4">📸</div>
+                <h4 className="text-lg font-semibold text-gray-800 mb-2">
+                  Drag & Drop your image here
+                </h4>
+                <p className="text-gray-600 mb-4">
+                  Or click to select a file
+                </p>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileSelect}
+                  className="hidden"
+                  id="imageUpload"
+                />
+                <label
+                  htmlFor="imageUpload"
+                  className="inline-block px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-2xl cursor-pointer hover:from-emerald-600 hover:to-teal-600 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-[1.02]"
+                >
+                  Choose Image
+                </label>
+                <p className="text-sm text-gray-500 mt-3">
+                  Supported formats: JPG, PNG, GIF, WebP
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="relative">
+                  <img
+                    src={imagePreview || ''}
+                    alt="Preview"
+                    className="w-full max-h-96 object-contain rounded-2xl shadow-lg"
+                  />
+                  <button
+                    onClick={() => {
+                      setImagePreview(null);
+                      setSelectedImage(null);
+                    }}
+                    className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full w-8 h-8 flex items-center justify-center transition-colors"
+                  >
+                    ×
+                  </button>
+                </div>
+                
+                {selectedImage && (
+                  <div className="bg-gray-50 rounded-2xl p-4">
+                    <h4 className="font-semibold text-gray-800 mb-2">Image Details</h4>
+                    <div className="space-y-1 text-sm text-gray-600">
+                      <p><strong>Name:</strong> {selectedImage?.name || 'Unknown'}</p>
+                      <p><strong>Size:</strong> {((selectedImage?.size || 0) / 1024 / 1024).toFixed(2)} MB</p>
+                      <p><strong>Type:</strong> {selectedImage?.type || 'Unknown'}</p>
+                    </div>
+                  </div>
+                )}
+                
+                <div className="flex space-x-4">
+                  <button
+                    onClick={sendImageMessage}
+                    disabled={isLoading}
+                    className="flex-1 py-3 px-6 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-2xl hover:from-emerald-600 hover:to-teal-600 transition-all duration-200 shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isLoading ? '⏳ Sending...' : '✨ Send Image'}
+                  </button>
+                  <button
+                    onClick={() => {
+                      setImagePreview(null);
+                      setSelectedImage(null);
+                    }}
+                    className="py-3 px-6 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-2xl transition-all duration-200"
+                  >
+                    Choose Another
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    )}
+    </>
   );
 }; 

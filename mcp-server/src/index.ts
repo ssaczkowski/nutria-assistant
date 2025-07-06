@@ -85,6 +85,28 @@ async function main() {
               },
               required: ['question'],
             },
+          },
+          {
+            name: 'image-nutrition-analysis',
+            description: 'Analizar imagen de comida para calcular macronutrientes',
+            inputSchema: {
+              type: 'object',
+              properties: {
+                imageData: {
+                  type: 'string',
+                  description: 'Datos de la imagen en base64',
+                },
+                imageName: {
+                  type: 'string',
+                  description: 'Nombre de la imagen',
+                },
+                userProfile: {
+                  type: 'object',
+                  description: 'Perfil del usuario',
+                },
+              },
+              required: ['imageData', 'imageName'],
+            },
           }
         );
       } else {
@@ -149,7 +171,7 @@ async function main() {
             const userProfile = args?.userProfile as any || {};
             
             // Crear prompt del sistema con información del usuario
-            let systemPrompt = 'Eres nutrIA, una IA especializada en nutrición y salud. Proporciona consejos útiles, precisos y personalizados sobre alimentación, dietas y hábitos saludables. Siempre recomienda consultar a profesionales de la salud para casos específicos.';
+            let systemPrompt = 'Eres nutrIA, una IA especializada en nutrición y salud. Proporciona consejos útiles, precisos y personalizados sobre alimentación, dietas y hábitos saludables. IMPORTANTE: Usa un formato natural y amigable con emojis. Para planes de comida, usa formato conversacional como "🌅 Para el desayuno te recomiendo..." en lugar de listas con asteriscos o markdown. El usuario son personas fitness/wellness de 18-35 años que quieren cumplir sus objetivos de salud. Siempre recomienda consultar a profesionales de la salud para casos específicos.';
             
             if (userProfile.name || userProfile.age || userProfile.weight || userProfile.height) {
               systemPrompt += '\n\nInformación del usuario:';
@@ -197,7 +219,7 @@ async function main() {
             const question = args?.question as string || '';
             const userProfile2 = args?.userProfile as any || {};
             
-            let adviceSystemPrompt = 'Eres nutrIA, una IA especializada en nutrición y salud. Proporciona consejos específicos y personalizados sobre alimentación y nutrición. Incluye recomendaciones prácticas y detalladas.';
+            let adviceSystemPrompt = 'Eres nutrIA, una IA especializada en nutrición y salud. Proporciona consejos específicos y personalizados sobre alimentación y nutrición. IMPORTANTE: Usa un formato natural y amigable con emojis. Para planes de comida, usa formato conversacional como "🌅 Para el desayuno te recomiendo..." en lugar de listas con asteriscos o markdown. El usuario son personas fitness/wellness de 18-35 años que quieren cumplir sus objetivos de salud. Incluye recomendaciones prácticas y detalladas.';
             
             if (userProfile2.name || userProfile2.age || userProfile2.weight || userProfile2.height) {
               adviceSystemPrompt += '\n\nPerfil del usuario:';
@@ -233,6 +255,81 @@ async function main() {
                 {
                   type: 'text',
                   text: adviceResponse.choices[0]?.message?.content || 'No se pudo generar respuesta',
+                },
+              ],
+            };
+
+          case 'image-nutrition-analysis':
+            if (!openai) {
+              throw new McpError(ErrorCode.MethodNotFound, 'OpenAI no está configurado. Ejecuta ./setup-openai-key.sh');
+            }
+            
+            const imageData = args?.imageData as string || '';
+            const imageName = args?.imageName as string || 'imagen';
+            const userProfile3 = args?.userProfile as any || {};
+            
+            if (!imageData) {
+              throw new McpError(ErrorCode.InvalidParams, 'No se proporcionó imagen para analizar');
+            }
+            
+            let imageAnalysisPrompt = 'Eres nutrIA, especialista en nutrición. Analiza esta imagen de comida y proporciona información detallada sobre los macronutrientes. Debes calcular cantidades aproximadas y dar información nutricional específica. IMPORTANTE: NO uses asteriscos ni markdown. Usa emojis y formato de tabla simple. Estructura tu respuesta con emojis para categorías y presenta los valores nutricionales en formato de tabla con líneas simples. El usuario son personas fitness/wellness de 18-35 años que quieren cumplir sus objetivos de salud.';
+            
+            if (userProfile3.name || userProfile3.age || userProfile3.weight || userProfile3.height) {
+              imageAnalysisPrompt += '\n\nPerfil del usuario:';
+              if (userProfile3.name) imageAnalysisPrompt += `\n• Nombre: ${userProfile3.name}`;
+              if (userProfile3.age) imageAnalysisPrompt += `\n• Edad: ${userProfile3.age} años`;
+              if (userProfile3.weight) imageAnalysisPrompt += `\n• Peso: ${userProfile3.weight} kg`;
+              if (userProfile3.height) imageAnalysisPrompt += `\n• Altura: ${userProfile3.height} m`;
+              
+              if (userProfile3.weight && userProfile3.height) {
+                const bmi = (userProfile3.weight / (userProfile3.height * userProfile3.height)).toFixed(1);
+                imageAnalysisPrompt += `\n• IMC: ${bmi}`;
+              }
+            }
+            
+            // Agregar objetivo si existe
+            if (userProfile3.objetivo) {
+              imageAnalysisPrompt += `\n• Objetivo: ${userProfile3.objetivo}`;
+              imageAnalysisPrompt += '\n\nIMPORTANTE: Evalúa si este alimento es apropiado para el objetivo del usuario. Asigna una calificación del 1 al 10 sobre qué tan bien se alinea con su objetivo. Tu respuesta debe terminar con: "Calificación para tu objetivo [objetivo]: [X]/10. Perfecto, registro este alimento en tu seguimiento."';
+            } else {
+              imageAnalysisPrompt += '\n\nTu respuesta debe terminar con: "Perfecto, registro este alimento en tu seguimiento."';
+            }
+            
+            // Agregar ejemplo de formato
+            imageAnalysisPrompt += '\n\nEjemplo de formato deseado:\n🍎 Mix Patagónico (40g)\n\n📊 Información Nutricional:\n────────────────────────\n🔥 Calorías │ 200-250 kcal\n🥩 Proteínas │ 4-6 g\n🍞 Carbohidratos │ 20-25 g\n🧈 Grasas │ 12-15 g\n────────────────────────';
+            
+            const imageAnalysisResponse = await openai.chat.completions.create({
+              model: 'gpt-4o',
+              messages: [
+                {
+                  role: 'system',
+                  content: imageAnalysisPrompt
+                },
+                {
+                  role: 'user',
+                  content: [
+                    {
+                      type: 'text',
+                      text: `Analiza esta imagen de comida y calcula los macronutrientes (proteínas, carbohidratos, grasas, calorías). Presenta la información nutricional en formato de tabla con emojis, sin usar asteriscos ni markdown${userProfile3.objetivo ? ' y evalúa qué tan apropiado es para mi objetivo.' : '.'}`
+                    },
+                    {
+                      type: 'image_url',
+                      image_url: {
+                        url: imageData
+                      }
+                    }
+                  ]
+                }
+              ],
+              max_tokens: 800,
+              temperature: 0.7,
+            });
+
+            return {
+              content: [
+                {
+                  type: 'text',
+                  text: imageAnalysisResponse.choices[0]?.message?.content || 'Error analizando imagen',
                 },
               ],
             };

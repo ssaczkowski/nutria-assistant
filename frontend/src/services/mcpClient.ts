@@ -13,6 +13,7 @@ export interface MCPMessage {
   timestamp: Date;
   toolName?: string;
   requestId?: string;
+  imageData?: string; // Base64 encoded image data
 }
 
 export interface MCPResource {
