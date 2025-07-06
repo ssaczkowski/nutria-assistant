@@ -10,6 +10,7 @@ yarn-error.log*
 .env.development.local
 .env.test.local
 .env.production.local
+mcp-server/.env
 
 # ===== LOGS =====
 logs/
@@ -46,4 +47,19 @@ notifications/*.json
 
 # ===== ARCHIVOS DE TESTING =====
 coverage/
-.nyc_output/ 
+.nyc_output/
+
+# ===== ARCHIVOS SENSIBLES =====
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+secret*
+credential*
+api-key*
+
+# ===== ARCHIVOS DE CONFIGURACIÓN PERSONAL =====
+.personal/
+.config/
+user-config.json 

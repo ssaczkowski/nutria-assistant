@@ -92,23 +92,15 @@ Un asistente de nutrición inteligente con interfaz web moderna protagonizado po
 ```
 
 **Opciones disponibles:**
-- **📱 WhatsApp**: La forma MÁS DIRECTA (Business API, Twilio, **Make Cloud**)
+
 - **📡 Webhook**: Zapier, Make, Discord, Slack, Teams
 - **📧 EmailJS**: Servicio gratuito de emails (200/mes)
 - **📁 Archivo Local**: Guarda notificaciones en JSON
 - **🖥️ Consola**: Solo logs en terminal
 
-### 🌟 Recomendación: Make Cloud + WhatsApp
 
-**Make Cloud con WhatsApp** es la opción **más fácil y directa**:
-- ✅ **Configuración visual** (sin código)
-- ✅ **Gratuito** (1,000 operaciones/mes)
-- ✅ **WhatsApp nativo** (integración oficial)
-- ✅ **5 minutos** de configuración
 
-📋 **Guía completa**: Ver `MAKE-WHATSAPP-GUIDE.md`
-
-> **¿Por qué cambiar?** Las contraseñas de aplicación están **deprecadas desde septiembre 2024**. Los nuevos métodos son más seguros, fáciles y confiables. **WhatsApp via Make es especialmente recomendado** para comunicación directa con profesionales.
+> **¿Por qué cambiar?** Las contraseñas de aplicación están **deprecadas desde septiembre 2024**. Los nuevos métodos son más seguros, fáciles y confiables.
 
 ### Ejecutar nutrIA
 
@@ -205,11 +197,11 @@ La herramienta de envío de notificaciones es una **funcionalidad interna** que 
 Usuario: "enviar mensaje Necesito agendar una cita para el próximo martes"
 nutrIA: ✅ Notificación enviada exitosamente a Dr. Ana García
 
-📧 Asunto: Consulta de Sabrina - nutrIA
+📧 Asunto: Consulta de Usuario - nutrIA
 📝 Tu mensaje ha sido enviado y deberías recibir una respuesta pronto.
 
 🔔 Te notificaremos cuando Dr. Ana García responda.
-📤 Método usado: 📱 WhatsApp
+📤 Método usado: 📧 Email
 📬 ID: abc123def456
 ```
 
@@ -221,11 +213,11 @@ nutrIA: [Respuesta con recomendaciones nutricionales]
 Usuario: "¿Podés validar esto con mi nutricionista?"
 nutrIA: ✅ Notificación enviada exitosamente a Dr. Ana García
 
-📧 Asunto: Validación profesional solicitada - Sabrina - nutrIA
+📧 Asunto: Validación profesional solicitada - Usuario - nutrIA
 📝 Se ha enviado tu solicitud de validación junto con el contexto de la conversación.
 
 🔔 Te notificaremos cuando Dr. Ana García responda.
-📤 Método usado: 📱 WhatsApp
+📤 Método usado: 📧 Email
 📬 ID: xyz789ghi012
 ```
 

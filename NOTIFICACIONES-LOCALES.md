@@ -26,10 +26,10 @@ notifications/notification-2025-07-06.json
   {
     "timestamp": "2025-07-06T04:56:36.545Z",
     "to": "nutricionista@example.com",
-    "subject": "Validación profesional solicitada - Sabrina - nutrIA",
+    "subject": "Validación profesional solicitada - Usuario - nutrIA",
     "message": "Solicitud de validación del paciente...",
     "userProfile": {
-      "name": "Sabrina",
+      "name": "Usuario",
       "age": 31,
       "weight": 50,
       "height": 1.55

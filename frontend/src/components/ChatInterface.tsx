@@ -49,12 +49,7 @@ const SUGGESTED_QUESTIONS = [
     color: "from-green-400 to-emerald-500",
     command: "contarle a mi doctor sobre mi progreso con la dieta y los cambios que he notado"
   },
-  {
-    question: "Mandarle WhatsApp a mi nutricionista",
-    icon: "💬",
-    color: "from-blue-400 to-cyan-500",
-    command: "mandarle whatsapp a mi nutricionista sobre mis dudas de alimentación"
-  }
+
 ];
 
 export const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
@@ -71,18 +66,18 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
   // Estados para el perfil del usuario
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [userProfile, setUserProfile] = useState({
-    name: 'Sabrina',
-    age: 31,
-    weight: 50,
-    height: 1.55
+    name: 'Usuario',
+    age: 25,
+    weight: 70,
+    height: 1.70
   });
   const [tempProfile, setTempProfile] = useState(userProfile);
 
   // Estados para el nutricionista
   const [isEditingNutritionist, setIsEditingNutritionist] = useState(false);
   const [nutritionist, setNutritionist] = useState({
-    name: 'Dr. Ana García',
-    email: 'sabrina.sacz@gmail.com'
+    name: 'Dr. Nutricionista',
+    email: 'nutricionista@ejemplo.com'
   });
   const [tempNutritionist, setTempNutritionist] = useState(nutritionist);
 
@@ -492,10 +487,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
             'quiero que sepa', 'necesito que sepa', 'debería saber', 'tiene que saber',
             'informar que', 'avisar que', 'notificar que', 'reportar que',
             
-            // WhatsApp específico (PRIORIDAD MÁXIMA)
-            'whatsapp', 'whatsapear', 'whatsappear', 'mensaje de whatsapp', 'por whatsapp',
-            'enviar whatsapp', 'mandar whatsapp', 'envía whatsapp', 'manda whatsapp',
-            'escribir whatsapp', 'escribir por whatsapp', 'mandarle whatsapp', 'enviarle whatsapp',
+
             
             // Más variaciones de envío directo
             'enviar a', 'mandar a', 'enviarle a', 'mandarle a', 'escribirle a', 'comunicarle a',
@@ -539,12 +531,7 @@ Por favor revisa esta información y proporciona tu opinión profesional.`;
             
             // Si no hay mensaje específico, proporcionar mensaje predeterminado
             if (message === input && emailKeywords.some(k => input.toLowerCase().includes(k))) {
-              // Para WhatsApp específico, mensaje más directo
-              if (input.toLowerCase().includes('whatsapp')) {
-                message = `Hola! Soy ${userProfile.name}. Te escribo desde nutrIA para consultarte algunas dudas sobre mi alimentación. ¿Podrías ayudarme cuando tengas un momento? ¡Gracias!`;
-              } else {
-                message = `Hola! Soy ${userProfile.name}. Me gustaría hacer una consulta nutricional. ¿Podrías ayudarme cuando tengas tiempo disponible? ¡Gracias!`;
-              }
+              message = `Hola! Soy ${userProfile.name}. Me gustaría hacer una consulta nutricional. ¿Podrías ayudarme cuando tengas tiempo disponible? ¡Gracias!`;
             }
             
             args.subject = `Consulta de ${userProfile.name || 'Paciente'} - nutrIA`;
@@ -598,7 +585,7 @@ Por favor revisa esta información y proporciona tu opinión profesional.`;
   const determineToolFromInput = async (input: string): Promise<MCPTool | null> => {
     const lowerInput = input.toLowerCase();
     
-    // Detectar solicitudes de envío de WhatsApp/mensaje (más amplio)
+    // Detectar solicitudes de envío de mensaje por email (más amplio)
     const messageKeywords = [
       // Envío directo
       'enviar mail', 'enviar email', 'enviar correo', 'mandar mail', 'mandar email', 
@@ -628,10 +615,7 @@ Por favor revisa esta información y proporciona tu opinión profesional.`;
       'quiero que sepa', 'necesito que sepa', 'debería saber', 'tiene que saber',
       'informar que', 'avisar que', 'notificar que', 'reportar que',
       
-      // WhatsApp específico (PRIORIDAD MÁXIMA)
-      'whatsapp', 'whatsapear', 'whatsappear', 'mensaje de whatsapp', 'por whatsapp',
-      'enviar whatsapp', 'mandar whatsapp', 'envía whatsapp', 'manda whatsapp',
-      'escribir whatsapp', 'escribir por whatsapp', 'mandarle whatsapp', 'enviarle whatsapp',
+
       
       // Más variaciones de envío directo
       'enviar a', 'mandar a', 'enviarle a', 'mandarle a', 'escribirle a', 'comunicarle a',
@@ -665,10 +649,10 @@ Por favor revisa esta información y proporciona tu opinión profesional.`;
     });
     
     if (isMessageRequest || isValidationRequest) {
-      // Crear herramienta virtual para envío de WhatsApp/mensaje
+      // Crear herramienta virtual para envío de mensaje
       const messageTool: MCPTool = {
         name: 'send-email',
-        description: 'Enviar mensaje WhatsApp al nutricionista',
+        description: 'Enviar mensaje por email al nutricionista',
         inputSchema: {
           type: 'object',
           properties: {
