@@ -1,5 +1,7 @@
 # 🦦 nutrIA - AI Nutrition Assistant
 
+<img src="https://github.com/user-attachments/assets/c4577113-a382-4704-9aaf-b09d1b8703a5" width="250" height="250" />
+
 Un asistente de nutrición inteligente con interfaz web moderna protagonizado por una adorable nutria fitness. Utiliza el protocolo MCP (Model Context Protocol) para interactuar con herramientas especializadas y ayudarte a alcanzar tus objetivos de salud.
 
 ## 🦦 Conoce a Nuestro Mascot
