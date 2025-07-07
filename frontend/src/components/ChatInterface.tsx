@@ -204,7 +204,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ className }) => {
     const welcomeMessage: MCPMessage = {
       id: Date.now().toString(),
       type: 'tool',
-      content: `¡Hola, ${userProfile.name}! 🦦\n\nSoy nutrIA, tu asistente especializado en nutrición y salud. Estoy aquí para ayudarte con:\n\n• Planes de alimentación personalizados\n• Consejos nutricionales específicos\n• Análisis de dietas y hábitos\n• Recomendaciones para objetivos de salud\n\n. El formato debe ser usando emoticones cuando sea posible ya que el usuario son personas fitness, wealthness de entre18 a 35 años que quieren cumplir su objetivo.`,
+      content: `¡Hola, ${userProfile.name}! 🦦\n\nSoy nutrIA, tu asistente especializado en nutrición y salud. Estoy aquí para ayudarte con:\n\n• Planes de alimentación personalizados\n• Consejos nutricionales específicos\n• Análisis de dietas y hábitos\n• Recomendaciones para objetivos de salud\n\nPuedes preguntarme o seleccionar una pregunta sugerida.`,
       timestamp: new Date(),
       toolName: 'chat'
     };
